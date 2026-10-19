@@ -1,13 +1,14 @@
 #!/usr/bin/env bash
 # Minimal end-to-end check of the packaged plugin with real dprint, for
 # platforms without bats (Windows). The bats suite in tests/ is the real test.
+# usage: scripts/smoke.sh [target]   (defaults to the host target)
 set -euo pipefail
 # shellcheck source=SCRIPTDIR/lib.sh
 source "$(dirname "${BASH_SOURCE[0]}")/lib.sh"
 
 ws="$(mktemp -d)"
 trap 'rm -rf "$ws"' EXIT
-cp "$repo_root/dist/$plugin_name-$(host_target).zip" "$ws/"
+cp "$repo_root/dist/$plugin_name-${1:-$(host_target)}.zip" "$ws/"
 ref="$("$repo_root/scripts/plugin-json.sh" "$ws")"
 # Relative to the config file, so no native Windows path ends up in the JSON.
 printf '{ "plugins": ["./plugin.json@%s"] }\n' "${ref##*@}" >"$ws/dprint.json"
