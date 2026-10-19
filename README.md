@@ -73,15 +73,14 @@ Formatting okhttp's 617 Kotlin files (486 of them changed, google style) with
 | Setup                                      | Full run |
 | ------------------------------------------ | -------- |
 | dprint-plugin-exec + ktfmt on the JVM      | 40.6 s   |
-| dprint-plugin-exec + ktfmt's native binary | 1.10 s   |
-| this plugin (GraalVM Community, serial GC) | 2.3 s    |
-| this plugin built with Oracle GraalVM, G1  | 0.75 s   |
+| dprint-plugin-exec + ktfmt's native binary | 1.11 s   |
+| this plugin                                | 0.8 s    |
 
-Release builds use GraalVM Community, whose native images only have the serial
-garbage collector. The plugin formats every file in one process, so each
-single-threaded collection pauses all formatting threads. ktfmt's native binary
-run through dprint-plugin-exec avoids that by starting one short-lived process
-per file.
+GraalVM Community native images only have a single-threaded, stop-the-world
+garbage collector. To keep one file's collection from pausing all the others,
+the plugin formats in up to 8 native-image isolates, each with its own heap, the
+way dprint-plugin-prettier runs a pool of V8 isolates. That costs memory: about
+1.1 GB peak on the run above, against 0.8 GB with a single heap (2.5 s).
 
 ## License
 

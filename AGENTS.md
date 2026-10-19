@@ -9,7 +9,10 @@ executable with GraalVM native-image.
   protocol (schema v5) server and parent-process checker.
 - `src/main/kotlin/dev/sargunv/dprint/ktfmt/`: `Main.kt` (entry point and
   `KtfmtHandler`), `Config.kt` (config resolution and diagnostics), `Plugin.kt`
-  (plugin info, version, formatting).
+  (plugin info, version, formatting), `Worker.kt` (formatting inside a worker
+  isolate).
+- `src/main/java/dev/sargunv/dprint/ktfmt/isolates/`: `IsolatePool`, which
+  spreads native formats across native-image isolates with separate heaps.
 - `schema.json`: config JSON schema, shipped as a release asset and referenced
   by the plugin's `configSchemaUrl`. Keep it in sync with `Config.kt`
   (`ConfigTest` checks the keys).
@@ -55,3 +58,7 @@ Use `mise tasks ls --all` for the full task list.
   tests won't notice a missing one, the bats suite will.
 - ktfmt isn't always idempotent, and dprint retries until output is stable, so
   compare single passes (`--skip-stable-format`) against the CLI.
+- Native formatting runs in worker isolates (`IsolatePool`), which share no
+  objects with the main isolate: anything a format needs must cross as bytes,
+  and the config crosses as `ResolvedConfig.workerJson`, so every setting must
+  survive `resolvedJson()` round-tripping.

@@ -1,5 +1,6 @@
 package dev.sargunv.dprint.ktfmt
 
+import dev.sargunv.dprint.ktfmt.isolates.IsolatePool
 import dev.sargunv.dprint.ktfmt.protocol.PluginHandler
 import dev.sargunv.dprint.ktfmt.protocol.PluginServer
 import dev.sargunv.dprint.ktfmt.protocol.parentProcessId
@@ -25,6 +26,18 @@ fun main(args: Array<String>) {
 }
 
 internal object KtfmtHandler : PluginHandler<ResolvedConfig> {
+  // Native image: format threads share up to 8 isolates, created as threads first need them. On
+  // okhttp (32 cores) 8 isolates format about as fast as 32 at under half the memory (1.1 vs 2.3 GB
+  // peak), and 3x faster than one. JVM: plain threads. Lazy because this object is initialized at
+  // image build time.
+  private val isolates by lazy {
+    if (System.getProperty("org.graalvm.nativeimage.imagecode") == "runtime") {
+      IsolatePool(Runtime.getRuntime().availableProcessors().coerceAtMost(8))
+    } else {
+      null
+    }
+  }
+
   override fun pluginInfo() = pluginInfoJson()
 
   override fun license() =
@@ -46,6 +59,10 @@ internal object KtfmtHandler : PluginHandler<ResolvedConfig> {
   override fun applyOverrides(config: ResolvedConfig, overrideJson: String) =
     config.withOverrides(overrideJson)
 
-  override fun format(path: String, text: ByteArray, config: ResolvedConfig) =
-    formatKotlin(path, text.decodeToString(), config)?.encodeToByteArray()
+  // The JVM path goes through the same JSON round trip as the isolates, so tests cover it.
+  override fun format(path: String, text: ByteArray, config: ResolvedConfig): ByteArray? {
+    val pool = isolates
+    return if (pool != null) pool.format(path, config.workerJson, text)
+    else formatInWorker(path, config.workerJson, text)
+  }
 }

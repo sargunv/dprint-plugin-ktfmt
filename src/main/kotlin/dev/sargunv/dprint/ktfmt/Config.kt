@@ -70,6 +70,9 @@ class ResolvedConfig(
   }
     .toString()
 
+  /** The config as [IsolatePool]'s workers receive it. */
+  val workerJson: String by lazy { resolvedJson() }
+
   fun withOverrides(overrideJson: String): ResolvedConfig =
     resolve(global, JsonObject(raw + Json.parseToJsonElement(overrideJson).jsonObject))
 }
