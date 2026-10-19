@@ -1,0 +1,90 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "dprint-plugin-ktfmt configuration",
+  "type": "object",
+  "properties": {
+    "style": {
+      "description": "The ktfmt style to start from. The other options override its settings.",
+      "type": "string",
+      "default": "meta",
+      "oneOf": [
+        {
+          "const": "meta",
+          "description": "Meta style, ktfmt's default: 2-space blocks, 4-space continuations, trailing commas only added."
+        },
+        {
+          "const": "google",
+          "description": "Google internal style: 2-space blocks and continuations."
+        },
+        {
+          "const": "kotlinlang",
+          "description": "Kotlin coding conventions: 4-space blocks and continuations."
+        }
+      ]
+    },
+    "lineWidth": {
+      "description": "The maximum line width. Defaults to the global lineWidth, or 100 if that is not set.",
+      "type": "integer",
+      "minimum": 1
+    },
+    "blockIndent": {
+      "description": "Spaces to indent a new block. Defaults to the style's value.",
+      "type": "integer",
+      "minimum": 0
+    },
+    "continuationIndent": {
+      "description": "Spaces to indent a line broken for being too long. Defaults to the style's value.",
+      "type": "integer",
+      "minimum": 0
+    },
+    "trailingCommas": {
+      "description": "How to manage trailing commas. Defaults to onlyAdd for the meta style and complete otherwise.",
+      "type": "string",
+      "oneOf": [
+        {
+          "const": "complete",
+          "description": "Adds trailing commas to lists broken across lines and removes them elsewhere."
+        },
+        {
+          "const": "onlyAdd",
+          "description": "Adds trailing commas to lists broken across lines and never removes them, so they can force a break."
+        },
+        {
+          "const": "none",
+          "description": "Leaves trailing commas as they are."
+        }
+      ]
+    },
+    "removeUnusedImports": {
+      "description": "Whether to remove unused imports.",
+      "type": "boolean",
+      "default": true
+    },
+    "preserveLambdaBreaks": {
+      "description": "Whether to keep lambdas that span multiple lines in the input on multiple lines.",
+      "type": "boolean",
+      "default": true
+    },
+    "newLineKind": {
+      "description": "The kind of newline to use. Defaults to the global newLineKind, or auto.",
+      "type": "string",
+      "oneOf": [
+        {
+          "const": "auto",
+          "description": "For each file, uses the first newline kind found in the file."
+        },
+        { "const": "lf", "description": "Uses line feed." },
+        { "const": "crlf", "description": "Uses carriage return, line feed." },
+        {
+          "const": "system",
+          "description": "Uses the system standard newline."
+        }
+      ]
+    },
+    "useTabs": {
+      "description": "ktfmt only indents with spaces, so this can only be false.",
+      "type": "boolean",
+      "const": false
+    }
+  }
+}
