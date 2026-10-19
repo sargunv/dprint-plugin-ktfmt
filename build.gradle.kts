@@ -65,4 +65,8 @@ tasks.processResources {
   filesMatching("plugin.properties") { expand("version" to version) }
 }
 
-tasks.test { useJUnitPlatform() }
+tasks.test {
+  useJUnitPlatform()
+  // ConfigTest checks the schema against the resolved config.
+  inputs.file("schema.json")
+}

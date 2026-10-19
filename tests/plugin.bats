@@ -138,6 +138,15 @@ expect_ktfmt() {
   expect_ktfmt build.gradle.kts
 }
 
+@test "license includes the plugin's and ktfmt's" {
+  write_config
+
+  run --separate-stderr dprint_ws license
+  [ "$status" -eq 0 ]
+  [[ "$output" == *$'DPRINT-PLUGIN-KTFMT LICENSE ====\nMIT OR Apache-2.0'* ]]
+  [[ "$output" == *"Apache License"* ]]
+}
+
 @test "an unknown config property is a diagnostic" {
   write_config '"ktfmt": { "definitelyUnknownOption": true },'
 

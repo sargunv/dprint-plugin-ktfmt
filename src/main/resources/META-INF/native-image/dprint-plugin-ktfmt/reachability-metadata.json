@@ -1,0 +1,7 @@
+{
+  "resources": [
+    { "glob": "LICENSE" },
+    { "glob": "KTFMT_LICENSE" },
+    { "glob": "plugin.properties" }
+  ]
+}

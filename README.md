@@ -5,7 +5,9 @@ with [ktfmt](https://github.com/Kotlin/ktfmt).
 
 It is a process plugin: a native executable built from ktfmt itself with GraalVM
 native-image. dprint starts it once per run and sends it every file, so there is
-no JVM startup per file, and the output matches the ktfmt CLI's.
+no JVM startup per file, and the output matches the ktfmt CLI's. (ktfmt is not
+idempotent on a few inputs, such as some KDoc tables; dprint formats those again
+until the output is stable.)
 
 ## Setup
 
@@ -65,20 +67,23 @@ Release builds are native executables for Linux (x86_64, aarch64), macOS
 
 ## Performance
 
-Formatting okhttp's 617 Kotlin files (486 of them changed) on a 32-core Linux
-machine:
+Formatting okhttp's 617 Kotlin files (486 of them changed, google style) with
+`dprint fmt --incremental=false` on a 32-core Linux machine:
 
-| Setup                                      | Full run |
-| ------------------------------------------ | -------- |
-| dprint-plugin-exec + ktfmt on the JVM      | 40.6 s   |
-| dprint-plugin-exec + ktfmt's native binary | 1.10 s   |
-| this plugin                                | 2.4 s    |
+| Setup                                         | Full run |
+| --------------------------------------------- | -------- |
+| dprint-plugin-exec + ktfmt on the JVM         | 40.6 s   |
+| dprint-plugin-exec + ktfmt's native binary    | 1.10 s   |
+| this plugin (GraalVM Community, serial GC)    | 4.5 s    |
+| this plugin built with Oracle GraalVM, serial | 2.4 s    |
+| this plugin built with Oracle GraalVM, G1     | 0.80 s   |
 
 Release builds use GraalVM Community, whose native images only have the serial
-garbage collector. On a large run most of the time is single-threaded GC pauses:
-about 1.9 s of the 2.4 s above. A G1 build of the same plugin took 0.80 s, but
-native-image G1 needs Oracle GraalVM and only works on Linux. For now, running
-ktfmt's own native binary through dprint-plugin-exec is faster on large runs.
+garbage collector. On a large run most of the time is single-threaded full GC
+pauses while the heap grows: about 3.4 s of the 4.5 s above. A larger minimum
+heap (`-XX:MinHeapSize=2g`) brings it to about 2.6 s at the cost of resident
+memory. For now, running ktfmt's own native binary through dprint-plugin-exec is
+faster on large runs.
 
 ## License
 

@@ -5,11 +5,20 @@ executable with GraalVM native-image.
 
 ## Project map
 
-- `src/main/kotlin/dev/sargunv/dprint/ktfmt/`: protocol server and ktfmt
-  adapter.
+- `src/main/kotlin/dev/sargunv/dprint/ktfmt/protocol/`: dprint process plugin
+  protocol (schema v5) server and parent-process checker.
+- `src/main/kotlin/dev/sargunv/dprint/ktfmt/`: `Main.kt` (entry point and
+  `KtfmtHandler`), `Config.kt` (config resolution and diagnostics), `Plugin.kt`
+  (plugin info, version, formatting).
+- `schema.json`: config JSON schema, shipped as a release asset and referenced
+  by the plugin's `configSchemaUrl`. Keep it in sync with `Config.kt`
+  (`ConfigTest` checks the keys).
+- `src/test/resources/parity/`: golden ktfmt CLI outputs per style (`.txt` so
+  the repo's own formatter skips them).
 - `src/main/java/ktfmt/nativeimage/`, `src/main/native-image/`,
-  `src/main/resources/META-INF/native-image/`: native-image configuration copied
-  from ktfmt's own native build.
+  `src/main/resources/META-INF/native-image/ktfmt/`: native-image configuration
+  copied from ktfmt's own native build. `.../native-image/dprint-plugin-ktfmt/`
+  registers this plugin's own resources (licenses, `plugin.properties`).
 - `scripts/package.sh`: zip the native executable into
   `dist/dprint-plugin-ktfmt-<target>.zip`.
 - `scripts/plugin-json.sh`: write `plugin.json` for the zips in a directory,
@@ -30,6 +39,7 @@ executable with GraalVM native-image.
 - `mise run test:integration`: package, then run the bats tests.
 - `mise run parity <corpus-dir> [meta|google|kotlinlang]`: package, then diff
   against the ktfmt CLI.
+- `mise run parity:okhttp`: parity in every style on okhttp at a pinned commit.
 - `mise run verify`: check, build, and integration tests.
 
 Use `mise tasks ls --all` for the full task list.
@@ -40,5 +50,8 @@ Use `mise tasks ls --all` for the full task list.
   match it.
 - Release zips contain only the executable, named `dprint-plugin-ktfmt[.exe]`,
   at the root.
+- stdout carries only protocol messages; `main` points `System.out` at stderr.
+- Resources read at run time must be registered for native-image; the JVM unit
+  tests won't notice a missing one, the bats suite will.
 - ktfmt isn't always idempotent, and dprint retries until output is stable, so
   compare single passes (`--skip-stable-format`) against the CLI.

@@ -83,7 +83,7 @@ jobs:
           body: |
             ```json
             "plugins": [
-              "https://plugins.dprint.dev/sargunv/dprint-plugin-ktfmt-${{ github.ref_name }}.json@${{ steps.plugin.outputs.checksum }}"
+              "https://plugins.dprint.dev/sargunv/ktfmt-${{ github.ref_name }}.json@${{ steps.plugin.outputs.checksum }}"
             ]
             ```
           files: |
