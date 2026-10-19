@@ -70,20 +70,18 @@ Release builds are native executables for Linux (x86_64, aarch64), macOS
 Formatting okhttp's 617 Kotlin files (486 of them changed, google style) with
 `dprint fmt --incremental=false` on a 32-core Linux machine:
 
-| Setup                                         | Full run |
-| --------------------------------------------- | -------- |
-| dprint-plugin-exec + ktfmt on the JVM         | 40.6 s   |
-| dprint-plugin-exec + ktfmt's native binary    | 1.10 s   |
-| this plugin (GraalVM Community, serial GC)    | 4.5 s    |
-| this plugin built with Oracle GraalVM, serial | 2.4 s    |
-| this plugin built with Oracle GraalVM, G1     | 0.80 s   |
+| Setup                                      | Full run |
+| ------------------------------------------ | -------- |
+| dprint-plugin-exec + ktfmt on the JVM      | 40.6 s   |
+| dprint-plugin-exec + ktfmt's native binary | 1.10 s   |
+| this plugin (GraalVM Community, serial GC) | 2.3 s    |
+| this plugin built with Oracle GraalVM, G1  | 0.75 s   |
 
 Release builds use GraalVM Community, whose native images only have the serial
-garbage collector. On a large run most of the time is single-threaded full GC
-pauses while the heap grows: about 3.4 s of the 4.5 s above. A larger minimum
-heap (`-XX:MinHeapSize=2g`) brings it to about 2.6 s at the cost of resident
-memory. For now, running ktfmt's own native binary through dprint-plugin-exec is
-faster on large runs.
+garbage collector. The plugin formats every file in one process, so each
+single-threaded collection pauses all formatting threads. ktfmt's native binary
+run through dprint-plugin-exec avoids that by starting one short-lived process
+per file.
 
 ## License
 

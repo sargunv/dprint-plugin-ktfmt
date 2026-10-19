@@ -215,22 +215,22 @@ url_api = "https://api.github.com/repos/rhysd/actionlint/releases/assets/3849249
 provenance = "github-attestations"
 
 [[tools.java]]
-version = "graalvm-community-25.0.2"
+version = "graalvm-community-innovation-25.0.4.1.1"
 backend = "core:java"
-specifiers = ["graalvm-community-25.0.2"]
+specifiers = ["graalvm-community-innovation-25.0.4.1.1"]
 
 [tools.java."platforms.linux-arm64"]
-checksum = "sha256:b4580d9f223d0a4b3a1757e58b18ff4c1db950e67e105fc5cb741457d2384a71"
-url = "https://github.com/graalvm/graalvm-ce-builds/releases/download/jdk-25.0.2/graalvm-community-jdk-25.0.2_linux-aarch64_bin.tar.gz"
+checksum = "sha256:e5f5e2f59643cf96765c741dc00b206f86c69c8c1bf843fe26050c871e0e2dbc"
+url = "https://github.com/graalvm/graalvm-ce-builds/releases/download/graal-25.4.4.1.1/graalvm-community-jdk-25i4-25.0.4.1.1_linux-aarch64_bin.tar.gz"
 
 [tools.java."platforms.linux-x64"]
-checksum = "sha256:e0be791c8fda4d03b6b0a0cb824fef3149736170057b3a515252b44419606af0"
-url = "https://github.com/graalvm/graalvm-ce-builds/releases/download/jdk-25.0.2/graalvm-community-jdk-25.0.2_linux-x64_bin.tar.gz"
+checksum = "sha256:05ccbbe783210b6886ff7b08fcd0b061c5dce4852b05db87284fc0e24abb08e2"
+url = "https://github.com/graalvm/graalvm-ce-builds/releases/download/graal-25.4.4.1.1/graalvm-community-jdk-25i4-25.0.4.1.1_linux-x64_bin.tar.gz"
 
 [tools.java."platforms.macos-arm64"]
-checksum = "sha256:50201fb8e8e653e7a253d955877a6b6ad634b42e60c84f45df7e1bb51361635f"
-url = "https://github.com/graalvm/graalvm-ce-builds/releases/download/jdk-25.0.2/graalvm-community-jdk-25.0.2_macos-aarch64_bin.tar.gz"
+checksum = "sha256:4ec9932aa4aab1afca0ea31982d32d6f956615c61fe21a227b49756b25adda4f"
+url = "https://github.com/graalvm/graalvm-ce-builds/releases/download/graal-25.4.4.1.1/graalvm-community-jdk-25i4-25.0.4.1.1_macos-aarch64_bin.tar.gz"
 
 [tools.java."platforms.windows-x64"]
-checksum = "sha256:72edc27ce2dd3c156332144a339c97995745cae291205ed2f9b5cc26aa9cb422"
-url = "https://github.com/graalvm/graalvm-ce-builds/releases/download/jdk-25.0.2/graalvm-community-jdk-25.0.2_windows-x64_bin.zip"
+checksum = "sha256:2733ea1331f1a98b05dd55a768b07347051dad48f030dbbfa191b11a2ccf4144"
+url = "https://github.com/graalvm/graalvm-ce-builds/releases/download/graal-25.4.4.1.1/graalvm-community-jdk-25i4-25.0.4.1.1_windows-x64_bin.zip"

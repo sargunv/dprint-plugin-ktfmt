@@ -34,9 +34,6 @@ fun lines(name: String) =
 
 graalvmNative {
   toolchainDetection = false
-  // GraalVM CE 25.0.2 rejects the repository's conditional bulk reflection queries; ktfmt's own
-  // metadata in src/main/resources covers everything the formatter needs.
-  metadataRepository { enabled = false }
   binaries.named("main") {
     imageName = "dprint-plugin-ktfmt"
     mainClass = "dev.sargunv.dprint.ktfmt.MainKt"
