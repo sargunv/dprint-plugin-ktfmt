@@ -4,8 +4,10 @@
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 plugin_name="dprint-plugin-ktfmt"
 
+# The bare semver tag on HEAD, else 0.0.0, as build.gradle.kts computes it.
 plugin_version() {
-  sed -n 's/^version=//p' "$repo_root/gradle.properties"
+  git -C "$repo_root" describe --tags --exact-match --match '[0-9]*.[0-9]*.[0-9]*' 2>/dev/null ||
+    echo 0.0.0
 }
 
 # Rust-style target triple of the host, as used in release asset names.

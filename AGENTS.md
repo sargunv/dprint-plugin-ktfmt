@@ -29,8 +29,8 @@ executable with GraalVM native-image.
 - `scripts/`: packaging (`package.sh`, `plugin-json.sh`), parity against the
   ktfmt CLI (`parity.sh`, `parity-okhttp.sh`), and the Windows CI smoke test
   (`smoke.sh`).
-- `.github/workflows/`: `ci.yml` and `release.yml` (bare semver tags matching
-  `gradle.properties`) share the native build matrix in `native.yml`.
+- `.github/workflows/`: `ci.yml` and `release.yml` share the native build matrix
+  in `native.yml`.
 
 ## Dev tool commands
 
@@ -49,8 +49,9 @@ Use `mise tasks ls --all` for the full task list.
 
 ## Project invariants
 
-- The plugin version is ktfmt's version (`gradle.properties`); release tags must
-  match it.
+- The release tag is the version: bare semver whose major.minor is the bundled
+  ktfmt's (`0.65.N` for ktfmt 0.65). Pushing it builds, tests, and publishes the
+  GitHub release; untagged builds report `0.0.0`.
 - Release zips contain only the executable, named `dprint-plugin-ktfmt[.exe]`,
   at the root.
 - stdout carries only protocol messages; `main` points `System.out` at stderr.

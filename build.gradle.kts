@@ -3,6 +3,20 @@ plugins {
   id("org.graalvm.buildtools.native") version "1.1.8"
 }
 
+// A release build runs on its bare semver tag, which is the version; other builds report 0.0.0.
+// scripts/lib.sh reads it the same way.
+version =
+  providers
+    .exec {
+      commandLine("git", "describe", "--tags", "--exact-match", "--match", "[0-9]*.[0-9]*.[0-9]*")
+      isIgnoreExitValue = true
+    }
+    .standardOutput
+    .asText
+    .get()
+    .trim()
+    .ifEmpty { "0.0.0" }
+
 repositories { mavenCentral() }
 
 dependencies {

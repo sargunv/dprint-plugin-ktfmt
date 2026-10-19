@@ -25,9 +25,9 @@ jobs:
             echo "Release tags must use bare semver like 0.0.0." >&2
             exit 1
           fi
-          version="$(sed -n 's/^version=//p' gradle.properties)"
-          if [[ "$GITHUB_REF_NAME" != "$version" ]]; then
-            echo "Tag $GITHUB_REF_NAME does not match gradle.properties version $version." >&2
+          ktfmt="$(sed -n 's/.*"org.jetbrains.kotlinx:ktfmt:\([0-9.]*\)".*/\1/p' build.gradle.kts)"
+          if [[ "${GITHUB_REF_NAME%.*}" != "$ktfmt" ]]; then
+            echo "Tag $GITHUB_REF_NAME must be $ktfmt.N to match the bundled ktfmt $ktfmt." >&2
             exit 1
           fi
 
@@ -76,17 +76,27 @@ jobs:
           echo "checksum=${ref##*@}" >>"$GITHUB_OUTPUT"
           cat dist/plugin.json
 
+      # gh uploads the assets to a draft and then publishes it, which immutable releases require.
       - name: Publish GitHub release
-        uses: softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64 # v3.0.3
-        with:
-          fail_on_unmatched_files: true
-          body: |
-            ```json
-            "plugins": [
-              "https://plugins.dprint.dev/sargunv/ktfmt-${{ github.ref_name }}.json@${{ steps.plugin.outputs.checksum }}"
-            ]
-            ```
-          files: |
-            dist/plugin.json
-            dist/dprint-plugin-ktfmt-*.zip
-            schema.json
+        env:
+          GH_TOKEN: ${{ github.token }}
+          CHECKSUM: ${{ steps.plugin.outputs.checksum }}
+        run: |
+          notes="$(
+            cat <<EOF
+          Bundles ktfmt ${GITHUB_REF_NAME%.*}.
+
+          \`\`\`sh
+          dprint add sargunv/dprint-plugin-ktfmt
+          \`\`\`
+
+          or add to your dprint config's \`plugins\`:
+
+          \`\`\`
+          https://plugins.dprint.dev/sargunv/ktfmt-$GITHUB_REF_NAME.json@$CHECKSUM
+          \`\`\`
+          EOF
+          )"
+          gh release create "$GITHUB_REF_NAME" --verify-tag --title "$GITHUB_REF_NAME" \
+            --notes "$notes" --generate-notes \
+            dist/plugin.json dist/dprint-plugin-ktfmt-*.zip schema.json
