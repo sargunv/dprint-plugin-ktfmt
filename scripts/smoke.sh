@@ -14,6 +14,7 @@ printf '{ "plugins": ["./plugin.json@%s"] }\n' "${ref##*@}" >"$ws/dprint.json"
 printf 'class A{fun f( ){}}\n' >"$ws/A.kt"
 
 cd "$ws"
+dprint license --config dprint.json | grep -q "Apache License"
 dprint check --config dprint.json >/dev/null && {
   echo "check passed on an unformatted file" >&2
   exit 1

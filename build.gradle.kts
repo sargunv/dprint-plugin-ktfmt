@@ -51,6 +51,9 @@ graalvmNative {
       "-O3",
       "-march=compatibility",
       "--future-defaults=all",
+      // That initializes JDK file system code at run time, which needs the system's legacy charset
+      // (Cp1252, MS932, ...) whenever a resource is read on Windows.
+      "-H:+AddAllCharsets",
       "--link-at-build-time=org.jetbrains.kotlinx.ktfmt",
       "--add-opens=java.base/java.util=ALL-UNNAMED",
       "-H:+ReportExceptionStackTraces",
