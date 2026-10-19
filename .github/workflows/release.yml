@@ -1,0 +1,92 @@
+name: Release
+
+on:
+  push:
+    tags: ["*.*.*"]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  validate:
+    name: validate
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Validate release tag
+        run: |
+          if [[ ! "$GITHUB_REF_NAME" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "Release tags must use bare semver like 0.0.0." >&2
+            exit 1
+          fi
+          version="$(sed -n 's/^version=//p' gradle.properties)"
+          if [[ "$GITHUB_REF_NAME" != "$version" ]]; then
+            echo "Tag $GITHUB_REF_NAME does not match gradle.properties version $version." >&2
+            exit 1
+          fi
+
+  hygiene:
+    name: hygiene
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    needs: validate
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: jdx/mise-action@08ae2a091c038e1e05ec6f5115dc5c69d5a2a6b8 # v5.1.2
+        with:
+          cache: true
+          install: true
+      - run: mise run check
+      - run: mise run build
+
+  native:
+    needs: validate
+    uses: ./.github/workflows/native.yml
+
+  publish:
+    name: publish
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs:
+      - hygiene
+      - native
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          pattern: dprint-plugin-ktfmt-*
+          path: dist
+          merge-multiple: true
+
+      - name: Write plugin.json
+        id: plugin
+        run: |
+          zips=(dist/dprint-plugin-ktfmt-*.zip)
+          test "${#zips[@]}" -eq 4
+          ref="$(scripts/plugin-json.sh --release dist)"
+          echo "checksum=${ref##*@}" >>"$GITHUB_OUTPUT"
+          cat dist/plugin.json
+
+      - name: Publish GitHub release
+        uses: softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64 # v3.0.3
+        with:
+          fail_on_unmatched_files: true
+          body: |
+            ```json
+            "plugins": [
+              "https://plugins.dprint.dev/sargunv/dprint-plugin-ktfmt-${{ github.ref_name }}.json@${{ steps.plugin.outputs.checksum }}"
+            ]
+            ```
+          files: |
+            dist/plugin.json
+            dist/dprint-plugin-ktfmt-*.zip
+            schema.json

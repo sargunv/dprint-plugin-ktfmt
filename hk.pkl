@@ -6,7 +6,11 @@ local lintSteps = new Mapping<String, Step> {
   ["dprint"] = (Builtins.dprint) { exclusive = true }
   ["shellcheck"] {
     glob = List("**/*.sh", "**/*.bats")
-    check = "shellcheck {{files}}"
+    check = "shellcheck -x {{files}}"
+  }
+  ["actionlint"] {
+    glob = List(".github/workflows/*.yml")
+    check = "actionlint {{files}}"
   }
 }
 

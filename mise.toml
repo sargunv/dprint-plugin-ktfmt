@@ -12,6 +12,9 @@ lockfile_platforms = ["linux-x64", "linux-arm64", "macos-arm64", "windows-x64"]
 "core:java" = "graalvm-community-25.0.2"
 "aqua:facebook/ktfmt" = "0.65"
 "aqua:koalaman/shellcheck" = "0.11.0"
+# No Windows build; CI smoke-tests the plugin there instead.
+"aqua:bats-core/bats-core" = { version = "1.14.0", os = ["linux", "macos"] }
+"aqua:rhysd/actionlint" = "1.7.12"
 
 [tasks.check]
 description = "Run every formatter and linter in report-only mode."
@@ -20,6 +23,45 @@ run = "hk check --all"
 [tasks.fix]
 description = "Apply every formatter and auto-fixable lint."
 run = "hk fix --all"
+
+[tasks.build]
+description = "Build the JVM plugin and run unit tests."
+run = "./gradlew build"
+run_windows = "gradlew.bat build"
+
+[tasks.native]
+description = "Compile the native executable with GraalVM native-image."
+run = "./gradlew nativeCompile"
+run_windows = "gradlew.bat nativeCompile"
+
+[tasks.package]
+description = "Zip the native executable into dist/ for the host platform."
+depends = ["native"]
+# Needs bash on Windows too (Git Bash).
+shell = "bash -c"
+run = "scripts/package.sh"
+
+[tasks."test:integration"]
+description = "Run the bats integration tests against the packaged plugin."
+depends = ["package"]
+run = "bats tests"
+
+[tasks.parity]
+description = "Diff plugin output against the ktfmt CLI on a corpus: mise run parity <dir> [style]."
+depends = ["package"]
+shell = "bash -c"
+run = "scripts/parity.sh"
+
+[tasks."parity:okhttp"]
+description = "Run parity in every style on okhttp at a pinned commit."
+depends = ["package"]
+shell = "bash -c"
+run = "scripts/parity-okhttp.sh"
+
+[tasks.verify]
+description = "Run checks, unit tests, the native build, and integration tests."
+# Sequential: concurrent Gradle runs in one project contend for build/.
+run = ["mise run check", "mise run build", "mise run test:integration"]
 
 [tasks._ktfmt]
 hide = true
