@@ -1,0 +1,30 @@
+[settings]
+experimental = true
+pin = true
+minimum_release_age = "3d"
+lockfile = true
+lockfile_platforms = ["linux-x64", "linux-arm64", "macos-arm64", "windows-x64"]
+
+[tools]
+"aqua:dprint/dprint" = "0.63.0"
+"aqua:jdx/hk" = "2.6.0"
+# GraalVM CE: the JDK for Gradle and the native-image compiler for release builds.
+"core:java" = "graalvm-community-25.0.2"
+"aqua:facebook/ktfmt" = "0.65"
+"aqua:koalaman/shellcheck" = "0.11.0"
+
+[tasks.check]
+description = "Run every formatter and linter in report-only mode."
+run = "hk check --all"
+
+[tasks.fix]
+description = "Apply every formatter and auto-fixable lint."
+run = "hk fix --all"
+
+[tasks._ktfmt]
+hide = true
+# Keep the JVM quiet on stdout: dprint exec reads it as the formatted file.
+run = 'java -XX:+UseSerialGC -XX:TieredStopAtLevel=1 -XX:-UsePerfData -Xlog:disable -Xlog:all=warning:stderr -jar {{ tools["aqua:facebook/ktfmt"].path }}/ktfmt'
+
+[hooks]
+postinstall = ["hk install --mise"]

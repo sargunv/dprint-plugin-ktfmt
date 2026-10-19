@@ -1,0 +1,12 @@
+com.google.common.collect.SingletonImmutableList
+com.google.googlejavaformat.Indent$Const
+kotlin.Function
+kotlin.KotlinVersion
+kotlin.SynchronizedLazyImpl
+kotlin.UNINITIALIZED_VALUE
+kotlin.collections.AbstractList$Companion
+kotlin.collections.EmptyMap
+kotlin.enums.EnumEntriesList
+kotlin.jvm.functions.Function1
+kotlin.text.Regex
+org.jetbrains.kotlinx.ktfmt

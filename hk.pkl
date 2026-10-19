@@ -1,0 +1,24 @@
+amends "package://github.com/jdx/hk/releases/download/v2.6.0/hk@2.6.0#/Config.pkl"
+import "package://github.com/jdx/hk/releases/download/v2.6.0/hk@2.6.0#/Builtins.pkl"
+
+local lintSteps = new Mapping<String, Step> {
+  // Unbatched: dprint parallelizes itself, and batching starts too many ktfmt JVMs at once.
+  ["dprint"] = (Builtins.dprint) { exclusive = true }
+  ["shellcheck"] {
+    glob = List("**/*.sh", "**/*.bats")
+    check = "shellcheck {{files}}"
+  }
+}
+
+hooks {
+  ["pre-commit"] {
+    fix = true
+    stash = "git"
+    steps { ...lintSteps }
+  }
+  ["check"] { steps { ...lintSteps } }
+  ["fix"] {
+    fix = true
+    steps { ...lintSteps }
+  }
+}

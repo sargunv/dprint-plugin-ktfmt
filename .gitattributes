@@ -1,0 +1,10 @@
+*           text=auto eol=lf
+*.jar       binary
+
+# Gradle wrapper scripts: the POSIX script needs LF, the batch file CRLF.
+gradlew                   text eol=lf linguist-vendored=true
+gradlew.bat               text eol=crlf linguist-vendored=true
+gradle/wrapper/**         linguist-vendored=true
+
+# Generated lockfiles.
+mise.lock                 linguist-generated=true
