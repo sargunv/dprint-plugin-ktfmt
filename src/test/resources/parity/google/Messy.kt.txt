@@ -1,0 +1,35 @@
+package example
+
+import java.util.UUID
+import kotlin.collections.List
+
+data class Person(
+  val name: String,
+  val age: Int,
+  val email: String?,
+  val id: UUID = UUID.randomUUID(),
+  val tags: List<String> = emptyList(),
+)
+
+fun greet(people: List<Person>): String {
+  val names =
+    people
+      .filter { it.age >= 18 }
+      .map { it.name.uppercase() }
+      .sortedBy { it.length }
+      .joinToString(separator = ", ", prefix = "[", postfix = "]")
+  return when {
+    names.isEmpty() -> "nobody"
+    else -> "hello $names"
+  }
+}
+
+fun render(items: List<String>) = items.forEach {
+  println(it)
+}
+
+class Box<T>(private val value: T) {
+  fun <R> map(f: (T) -> R): Box<R> = Box(f(value))
+
+  override fun toString() = "Box($value)"
+}
