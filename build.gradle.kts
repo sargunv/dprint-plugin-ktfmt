@@ -1,10 +1,7 @@
 plugins {
   kotlin("jvm") version "2.4.10"
-  application
   id("org.graalvm.buildtools.native") version "1.1.8"
 }
-
-group = "dev.sargunv"
 
 repositories { mavenCentral() }
 
@@ -12,7 +9,7 @@ dependencies {
   testImplementation(kotlin("test"))
   implementation("org.jetbrains.kotlinx:ktfmt:0.65")
   implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.9.0")
-  // For the @Substitute in src/main/java (copied from ktfmt's native-image source set).
+  // native-image APIs for src/main/java.
   compileOnly("org.graalvm.nativeimage:svm:25.0.1")
   // kotlin-compiler-embeddable ships jline's native-image.properties without the configs they
   // point at; ktfmt's own native build supplies the real jars the same way.
@@ -23,8 +20,6 @@ dependencies {
 }
 
 kotlin { jvmToolchain(25) }
-
-application { mainClass = "dev.sargunv.dprint.ktfmt.MainKt" }
 
 fun lines(name: String) =
   file("src/main/native-image/$name")

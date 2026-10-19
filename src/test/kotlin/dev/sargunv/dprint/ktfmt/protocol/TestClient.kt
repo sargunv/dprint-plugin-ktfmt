@@ -11,6 +11,9 @@ import java.util.concurrent.TimeUnit
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 
+/** Generous, for the first real ktfmt format on a slow CI runner. */
+const val TIMEOUT_SECONDS = 60L
+
 /** A message from the plugin. [body] is the data, error text, or formatted text, if any. */
 data class Response(val id: Int, val kind: Int, val target: Int, val body: String? = null)
 
@@ -55,7 +58,10 @@ class TestClient<C : Any>(handler: PluginHandler<C>, parallelism: Int = 4) : Aut
   }
 
   fun receive(): Response =
-    assertNotNull(responses.poll(10, TimeUnit.SECONDS), "timed out waiting for a response")
+    assertNotNull(
+        responses.poll(TIMEOUT_SECONDS, TimeUnit.SECONDS),
+        "timed out waiting for a response",
+      )
       .getOrThrow()
 
   /** Sends a message and returns the next response, checking that it answers this message. */
@@ -104,7 +110,7 @@ class TestClient<C : Any>(handler: PluginHandler<C>, parallelism: Int = 4) : Aut
     return receive().also { assertEquals(id, it.target, "response target") }
   }
 
-  fun exitCode(): Int = exit.get(10, TimeUnit.SECONDS)
+  fun exitCode(): Int = exit.get(TIMEOUT_SECONDS, TimeUnit.SECONDS)
 
   override fun close() {
     toServer.sink().close()
@@ -121,8 +127,8 @@ class TestClient<C : Any>(handler: PluginHandler<C>, parallelism: Int = 4) : Aut
           when (kind) {
             Kind.SUCCESS -> null
             Kind.DATA,
-            Kind.ERROR -> input.sized()
-            Kind.FORMAT_RESPONSE -> if (input.readInt() == 1) input.sized() else null
+            Kind.ERROR -> input.sizedString()
+            Kind.FORMAT_RESPONSE -> if (input.readInt() == 1) input.sizedString() else null
             else -> error("unexpected message kind $kind from plugin")
           }
         assertEquals(SUCCESS_BYTES, input.readInt(), "success bytes")
@@ -140,5 +146,5 @@ fun DataOutputStream.sized(text: String) {
   write(bytes)
 }
 
-private fun DataInputStream.sized(): String =
+private fun DataInputStream.sizedString(): String =
   ByteArray(readInt()).also(::readFully).decodeToString()

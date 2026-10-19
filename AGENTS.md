@@ -5,32 +5,32 @@ executable with GraalVM native-image.
 
 ## Project map
 
-- `src/main/kotlin/dev/sargunv/dprint/ktfmt/protocol/`: dprint process plugin
-  protocol (schema v5) server and parent-process checker.
-- `src/main/kotlin/dev/sargunv/dprint/ktfmt/`: `Main.kt` (entry point and
-  `KtfmtHandler`), `Config.kt` (config resolution and diagnostics), `Plugin.kt`
-  (plugin info, version, formatting), `Worker.kt` (formatting inside a worker
-  isolate).
-- `src/main/java/dev/sargunv/dprint/ktfmt/isolates/`: `IsolatePool`, which
-  spreads native formats across native-image isolates with separate heaps.
-- `schema.json`: config JSON schema, shipped as a release asset and referenced
-  by the plugin's `configSchemaUrl`. Keep it in sync with `Config.kt`
-  (`ConfigTest` checks the keys).
-- `src/test/resources/parity/`: golden ktfmt CLI outputs per style (`.txt` so
-  the repo's own formatter skips them).
+- `src/main/kotlin/dev/sargunv/dprint/ktfmt/`:
+  - `Main.kt`: entry point.
+  - `KtfmtHandler.kt`: what the plugin answers to dprint (plugin info, license,
+    config, formatting).
+  - `Config.kt`: config resolution and diagnostics.
+  - `Format.kt`: formatting with ktfmt, also as the worker isolates run it.
+- `src/main/kotlin/dev/sargunv/dprint/ktfmt/protocol/`: the dprint process
+  plugin protocol (schema v5): `PluginServer`, the `PluginHandler` it calls,
+  message framing, and the parent-process checker.
+- `src/main/java/dev/sargunv/dprint/ktfmt/isolates/IsolatePool.java`: spreads
+  native formats across native-image isolates with separate heaps.
 - `src/main/java/ktfmt/nativeimage/`, `src/main/native-image/`,
   `src/main/resources/META-INF/native-image/ktfmt/`: native-image configuration
   copied from ktfmt's own native build. `.../native-image/dprint-plugin-ktfmt/`
-  registers this plugin's own resources (licenses, `plugin.properties`).
-- `scripts/package.sh`: zip the native executable into
-  `dist/dprint-plugin-ktfmt-<target>.zip`.
-- `scripts/plugin-json.sh`: write `plugin.json` for the zips in a directory,
-  with relative references, or plugins.dprint.dev asset URLs with `--release`.
-- `scripts/parity.sh`: diff plugin output against the ktfmt CLI on a corpus.
-- `scripts/smoke.sh`: minimal dprint end-to-end check, for Windows CI.
-- `tests/*.bats`: integration tests running real dprint on the packaged plugin.
+  registers this plugin's resources (licenses, `plugin.properties`).
+- `schema.json`: config JSON schema, shipped as a release asset. `ConfigTest`
+  checks its keys against `Config.kt`.
+- `src/test/resources/parity/`: golden ktfmt CLI outputs per style (`.txt` so
+  this repo's formatter skips them).
+- `tests/plugin.bats`: integration tests running real dprint on the packaged
+  plugin.
+- `scripts/`: packaging (`package.sh`, `plugin-json.sh`), parity against the
+  ktfmt CLI (`parity.sh`, `parity-okhttp.sh`), and the Windows CI smoke test
+  (`smoke.sh`).
 - `.github/workflows/`: `ci.yml` and `release.yml` (bare semver tags matching
-  `gradle.properties`) share the native matrix in `native.yml`.
+  `gradle.properties`) share the native build matrix in `native.yml`.
 
 ## Dev tool commands
 
@@ -58,7 +58,6 @@ Use `mise tasks ls --all` for the full task list.
   tests won't notice a missing one, the bats suite will.
 - ktfmt isn't always idempotent, and dprint retries until output is stable, so
   compare single passes (`--skip-stable-format`) against the CLI.
-- Native formatting runs in worker isolates (`IsolatePool`), which share no
-  objects with the main isolate: anything a format needs must cross as bytes,
-  and the config crosses as `ResolvedConfig.workerJson`, so every setting must
-  survive `resolvedJson()` round-tripping.
+- Native formats run in worker isolates, which share no objects with the main
+  one: the config crosses as `ResolvedConfig.workerJson`, so every setting must
+  survive a `resolvedJson()` round trip.

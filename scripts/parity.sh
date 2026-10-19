@@ -12,7 +12,7 @@ source "$(dirname "${BASH_SOURCE[0]}")/lib.sh"
 corpus="$(cd "$1" && pwd)"
 style="${2:-meta}"
 work="$(mktemp -d)"
-[[ -n "${PARITY_KEEP:-}" ]] || trap 'rm -rf "$work"' EXIT
+trap 'rm -rf "$work"' EXIT
 
 mkdir -p "$work/dist"
 cp "$repo_root/dist/$plugin_name-$(host_target).zip" "$work/dist/"

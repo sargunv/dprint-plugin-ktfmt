@@ -1,12 +1,15 @@
-package dev.sargunv.dprint.ktfmt.protocol
+package dev.sargunv.dprint.ktfmt
 
-import dev.sargunv.dprint.ktfmt.KtfmtHandler
+import dev.sargunv.dprint.ktfmt.protocol.Kind
+import dev.sargunv.dprint.ktfmt.protocol.TestClient
 import kotlin.test.AfterTest
 import kotlin.test.Test
 import kotlin.test.assertContains
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.jsonObject
 
 /** The protocol server wired to the real ktfmt adapter, as `main` runs it. */
 class KtfmtHandlerTest {
@@ -15,9 +18,27 @@ class KtfmtHandlerTest {
   @AfterTest fun close() = client.close()
 
   @Test
-  fun `plugin info and license`() {
-    assertContains(client.request(Kind.PLUGIN_INFO).body!!, "\"configKey\":\"ktfmt\"")
-    assertContains(client.request(Kind.LICENSE).body!!, "Apache License")
+  fun `plugin info`() {
+    assertTrue(PLUGIN_VERSION.matches(Regex("""\d+\.\d+\.\d+""")), PLUGIN_VERSION)
+    val v = PLUGIN_VERSION
+    assertEquals(
+      Json.parseToJsonElement(
+          """{"name":"dprint-plugin-ktfmt","version":"$v","configKey":"ktfmt",
+            |"helpUrl":"https://github.com/sargunv/dprint-plugin-ktfmt",
+            |"configSchemaUrl":"https://plugins.dprint.dev/sargunv/dprint-plugin-ktfmt/$v/schema.json",
+            |"updateUrl":"https://plugins.dprint.dev/sargunv/dprint-plugin-ktfmt/latest.json"}"""
+            .trimMargin(),
+        )
+        .jsonObject,
+      Json.parseToJsonElement(client.request(Kind.PLUGIN_INFO).body!!).jsonObject,
+    )
+  }
+
+  @Test
+  fun license() {
+    val license = client.request(Kind.LICENSE).body!!
+    assertTrue(license.startsWith("MIT OR Apache-2.0"))
+    assertContains(license, "Apache License")
   }
 
   @Test

@@ -51,13 +51,7 @@ sha256() {
   fi
 }
 
-# The official ktfmt CLI jar, used as the reference output.
-ktfmt_jar() {
-  echo "${KTFMT_JAR:-$(mise where aqua:facebook/ktfmt)/ktfmt}"
-}
-
-# Runs the ktfmt CLI quietly (stdout is the formatted output when reading stdin).
+# The official ktfmt CLI, the reference output. Formats stdin to stdout with "-".
 ktfmt_cli() {
-  java -XX:+UseSerialGC -XX:TieredStopAtLevel=1 -XX:-UsePerfData -Xlog:disable \
-    -Xlog:all=warning:stderr -jar "$(ktfmt_jar)" "$@"
+  mise --cd "$repo_root" run --quiet _ktfmt "$@"
 }

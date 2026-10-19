@@ -4,6 +4,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertNull
+import kotlin.test.assertTrue
 import org.jetbrains.kotlinx.ktfmt.format.ParseError
 
 class FormatTest {
@@ -29,7 +30,7 @@ class FormatTest {
   @Test
   fun parseErrorsThrow() {
     val error = assertFailsWith<ParseError> { formatKotlin("A.kt", "fun f( {", config()) }
-    assert(error.message!!.isNotBlank())
+    assertTrue(error.message!!.isNotBlank())
   }
 
   @Test

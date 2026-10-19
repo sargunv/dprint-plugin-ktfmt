@@ -8,9 +8,8 @@ lockfile_platforms = ["linux-x64", "linux-arm64", "macos-arm64", "windows-x64"]
 [tools]
 "aqua:dprint/dprint" = "0.63.0"
 "aqua:jdx/hk" = "2.6.0"
-# GraalVM CE: the JDK for Gradle and the native-image compiler for release builds. An Innovation
-# release, as ktfmt's own native binary uses: unlike 25.0.x CE, they build with compressed
-# references, which roughly halve the serial GC's work on large runs.
+# The JDK and native-image compiler. GraalVM CE Innovation releases, unlike 25.0.x, build images
+# with compressed references, which halve the serial GC's work.
 "core:java" = "graalvm-community-innovation-25.0.4.1.1"
 "aqua:facebook/ktfmt" = "0.65"
 "aqua:koalaman/shellcheck" = "0.11.0"

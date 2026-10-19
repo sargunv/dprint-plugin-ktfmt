@@ -3,7 +3,6 @@ package dev.sargunv.dprint.ktfmt
 import java.io.File
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertTrue
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.jsonArray
@@ -136,23 +135,6 @@ class ConfigTest {
     assertEquals(
       resolved().keys + "useTabs",
       schema.getValue("properties").jsonObject.keys,
-    )
-  }
-
-  @Test
-  fun pluginInfo() {
-    val info = Json.parseToJsonElement(pluginInfoJson()).jsonObject
-    assertTrue(PLUGIN_VERSION.matches(Regex("""\d+\.\d+\.\d+""")), PLUGIN_VERSION)
-    val v = PLUGIN_VERSION
-    assertEquals(
-      expected(
-        """{"name":"dprint-plugin-ktfmt","version":"$v","configKey":"ktfmt",
-          |"helpUrl":"https://github.com/sargunv/dprint-plugin-ktfmt",
-          |"configSchemaUrl":"https://plugins.dprint.dev/sargunv/dprint-plugin-ktfmt/$v/schema.json",
-          |"updateUrl":"https://plugins.dprint.dev/sargunv/dprint-plugin-ktfmt/latest.json"}"""
-          .trimMargin(),
-      ),
-      info,
     )
   }
 }

@@ -1,31 +1,9 @@
 package dev.sargunv.dprint.ktfmt
 
-import java.util.Properties
-import kotlinx.serialization.json.buildJsonObject
-import kotlinx.serialization.json.put
+import java.util.concurrent.ConcurrentHashMap
 import org.jetbrains.kotlinx.ktfmt.format.FileType
 import org.jetbrains.kotlinx.ktfmt.format.Formatter
 import org.jetbrains.kotlinx.ktfmt.format.KotlinCode
-
-val PLUGIN_VERSION: String =
-  Properties()
-    .apply { ResolvedConfig::class.java.getResourceAsStream("/plugin.properties")!!.use(::load) }
-    .getProperty("version")
-
-const val FILE_MATCHING_JSON = """{"fileExtensions":["kt","kts"],"fileNames":[]}"""
-
-fun pluginInfoJson(): String = buildJsonObject {
-  put("name", "dprint-plugin-ktfmt")
-  put("version", PLUGIN_VERSION)
-  put("configKey", "ktfmt")
-  put("helpUrl", "https://github.com/sargunv/dprint-plugin-ktfmt")
-  put(
-    "configSchemaUrl",
-    "https://plugins.dprint.dev/sargunv/dprint-plugin-ktfmt/$PLUGIN_VERSION/schema.json",
-  )
-  put("updateUrl", "https://plugins.dprint.dev/sargunv/dprint-plugin-ktfmt/latest.json")
-}
-  .toString()
 
 /**
  * Returns the formatted text, or null when nothing changed. Throws ktfmt's ParseError on invalid
@@ -46,3 +24,15 @@ fun formatKotlin(path: String, text: String, config: ResolvedConfig): String? {
 }
 
 private fun String.withLineEndings(separator: String) = lineSequence().joinToString(separator)
+
+// Worker isolates share no objects with the main one, so the config arrives as its resolved JSON
+// and is parsed once per isolate.
+private val workerConfigs = ConcurrentHashMap<String, ResolvedConfig>()
+
+/**
+ * [formatKotlin] as the worker isolates in [dev.sargunv.dprint.ktfmt.isolates.IsolatePool] run it.
+ */
+fun formatInWorker(path: String, configJson: String, text: ByteArray): ByteArray? {
+  val config = workerConfigs.getOrPut(configJson) { resolveConfig("{}", configJson) }
+  return formatKotlin(path, text.decodeToString(), config)?.encodeToByteArray()
+}

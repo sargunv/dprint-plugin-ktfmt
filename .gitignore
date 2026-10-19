@@ -2,4 +2,3 @@ build/
 .gradle/
 .kotlin/
 dist/
-.dprint-cache/

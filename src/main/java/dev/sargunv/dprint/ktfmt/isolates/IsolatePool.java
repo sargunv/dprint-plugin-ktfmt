@@ -2,7 +2,7 @@ package dev.sargunv.dprint.ktfmt.isolates;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
-import dev.sargunv.dprint.ktfmt.WorkerKt;
+import dev.sargunv.dprint.ktfmt.FormatKt;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.graalvm.nativeimage.Isolate;
 import org.graalvm.nativeimage.IsolateThread;
@@ -18,8 +18,7 @@ import org.graalvm.word.WordFactory;
 
 /**
  * Formats in a pool of native-image isolates, each with its own heap and garbage collector, so one
- * isolate's stop-the-world collection doesn't pause formatting in the others. dprint-plugin-prettier
- * does the same with V8 isolates. Only usable in a native image.
+ * isolate's stop-the-world collection doesn't pause formatting in the others. Native image only.
  */
 public final class IsolatePool {
   private static final int CHANGED = 0;
@@ -99,7 +98,7 @@ public final class IsolatePool {
       CIntPointer length) {
     try {
       byte[] result =
-          WorkerKt.formatInWorker(
+          FormatKt.formatInWorker(
               new String(read(path, pathLength), UTF_8),
               new String(read(configJson, configLength), UTF_8),
               read(text, textLength));

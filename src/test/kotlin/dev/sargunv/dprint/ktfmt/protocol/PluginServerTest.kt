@@ -75,8 +75,7 @@ class PluginServerTest {
         "00000007 00000004 ffffffff", // id 7, IsAlive
       )
     val output = ByteArrayOutputStream()
-    val exitCode = PluginServer(ByteArrayInputStream(request), output, handler).run()
-    assertEquals(0, exitCode)
+    assertEquals(0, PluginServer(ByteArrayInputStream(request), output, handler).run())
     assertContentEquals(
       bytes(
         "00000000 00000005", // success, schema version 5
@@ -194,7 +193,7 @@ class PluginServerTest {
     client.registerConfig(1)
     val (started, release) = handler.gate("slow.kt")
     val slow = client.sendFormat("slow.kt", "slow")
-    assertTrue(started.await(10, TimeUnit.SECONDS))
+    assertTrue(started.await(TIMEOUT_SECONDS, TimeUnit.SECONDS))
     assertEquals("FAST", client.format("fast.kt", "fast").body)
     release.countDown()
     assertEquals(Response(2, Kind.FORMAT_RESPONSE, slow, "SLOW"), client.receive())
@@ -207,7 +206,7 @@ class PluginServerTest {
     val (started, release) = handler.gate("running.kt")
     val running = client.sendFormat("running.kt", "a")
     val queued = client.sendFormat("queued.kt", "b")
-    assertTrue(started.await(10, TimeUnit.SECONDS))
+    assertTrue(started.await(TIMEOUT_SECONDS, TimeUnit.SECONDS))
     client.send(Kind.CANCEL_FORMAT) { writeInt(running) }
     client.send(Kind.CANCEL_FORMAT) { writeInt(queued) }
     client.send(Kind.CANCEL_FORMAT) { writeInt(12345) } // unknown ids are ignored
@@ -289,14 +288,6 @@ class PluginServerTest {
     client.output.writeInt(0)
     client.output.flush()
     assertEquals(1, client.exitCode())
-  }
-
-  @Test
-  fun `parent pid argument`() {
-    assertEquals(42L, parentProcessId(arrayOf("--parent-pid", "42", "--init")))
-    assertNull(parentProcessId(arrayOf("--init")))
-    assertNull(parentProcessId(arrayOf("--parent-pid")))
-    assertNull(parentProcessId(arrayOf("--parent-pid", "nope")))
   }
 }
 

@@ -1,13 +1,8 @@
 # dprint-plugin-ktfmt
 
 A [dprint](https://dprint.dev) plugin that formats Kotlin (`.kt` and `.kts`)
-with [ktfmt](https://github.com/Kotlin/ktfmt).
-
-It is a process plugin: a native executable built from ktfmt itself with GraalVM
-native-image. dprint starts it once per run and sends it every file, so there is
-no JVM startup per file, and the output matches the ktfmt CLI's. (ktfmt is not
-idempotent on a few inputs, such as some KDoc tables; dprint formats those again
-until the output is stable.)
+with [ktfmt](https://github.com/Kotlin/ktfmt). Its output matches the ktfmt
+CLI's.
 
 ## Setup
 
@@ -15,8 +10,7 @@ until the output is stable.)
 dprint add sargunv/dprint-plugin-ktfmt
 ```
 
-This adds an entry like the following to your dprint config. Process plugins
-need the checksum, which `dprint add` fills in for you.
+This adds an entry like the following to your dprint config:
 
 ```jsonc
 {
@@ -44,16 +38,15 @@ Options go under the `ktfmt` key:
 | `newLineKind`          | `auto`, `lf`, `crlf`, `system` | global `newLineKind`, else `auto`     |
 
 `style` picks one of ktfmt's presets (`--meta-style`, `--google-style`,
-`--kotlinlang-style`); the other options override individual settings of it.
+`--kotlinlang-style`), and the other options override its settings.
 
-`lineWidth` and `newLineKind` follow dprint's global options like other dprint
-plugins. Mind this if your global `lineWidth` is not ktfmt's 100: set `"ktfmt":
-{ "lineWidth": 100 }` to keep ktfmt's default. The global `indentWidth` is not
-used, because each style defines its own block and continuation indents. ktfmt
-only indents with spaces, so the global `useTabs` is ignored and `"ktfmt": {
-"useTabs": true }` is reported as a config error.
+Like other dprint plugins, `lineWidth` and `newLineKind` default to dprint's
+global options. If your global `lineWidth` isn't 100, set `"ktfmt": {
+"lineWidth": 100 }` to keep ktfmt's default. The global `indentWidth` and
+`useTabs` don't apply: each style sets its own indents, and ktfmt only indents
+with spaces.
 
-`.editorconfig` files are not read. Range formatting is not supported yet.
+`.editorconfig` files are not read, and range formatting is not supported.
 
 ## Versioning
 
@@ -62,25 +55,18 @@ Upgrading the plugin may change formatting the same way upgrading ktfmt would.
 
 ## Platforms
 
-Release builds are native executables for Linux (x86_64, aarch64), macOS
-(aarch64), and Windows (x86_64).
+Linux (x86_64, aarch64), macOS (aarch64), and Windows (x86_64).
 
 ## Performance
 
-Formatting okhttp's 617 Kotlin files (486 of them changed, google style) with
-`dprint fmt --incremental=false` on a 32-core Linux machine:
+Formatting okhttp's 617 Kotlin files with `dprint fmt` on a 32-core Linux
+machine:
 
-| Setup                                      | Full run |
-| ------------------------------------------ | -------- |
-| dprint-plugin-exec + ktfmt on the JVM      | 40.6 s   |
-| dprint-plugin-exec + ktfmt's native binary | 1.11 s   |
-| this plugin                                | 0.8 s    |
-
-GraalVM Community native images only have a single-threaded, stop-the-world
-garbage collector. To keep one file's collection from pausing all the others,
-the plugin formats in up to 8 native-image isolates, each with its own heap, the
-way dprint-plugin-prettier runs a pool of V8 isolates. That costs memory: about
-1.1 GB peak on the run above, against 0.8 GB with a single heap (2.5 s).
+| Setup                                      | Time   |
+| ------------------------------------------ | ------ |
+| dprint-plugin-exec + ktfmt on the JVM      | 40.6 s |
+| dprint-plugin-exec + ktfmt's native binary | 1.11 s |
+| dprint-plugin-ktfmt                        | 0.8 s  |
 
 ## License
 
