@@ -50,7 +50,6 @@ graalvmNative {
     buildArgs.addAll(
       "-O3",
       "-march=compatibility",
-      "--no-fallback",
       "--future-defaults=all",
       "--link-at-build-time=org.jetbrains.kotlinx.ktfmt",
       "--add-opens=java.base/java.util=ALL-UNNAMED",
@@ -58,7 +57,6 @@ graalvmNative {
       "-H:-UseContainerSupport",
       "-J--enable-native-access=ALL-UNNAMED",
       "-J--sun-misc-unsafe-memory-access=allow",
-      "--initialize-at-build-time=dev.sargunv.dprint.ktfmt",
     )
     buildArgs.addAll(lines("initialize-at-build-time.txt").map { "--initialize-at-build-time=$it" })
     buildArgs.addAll(lines("initialize-at-run-time.txt").map { "--initialize-at-run-time=$it" })

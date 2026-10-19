@@ -13,14 +13,13 @@ val PLUGIN_VERSION: String =
 
 internal object KtfmtHandler : PluginHandler<ResolvedConfig> {
   // In a native image, formats spread across up to 8 isolates so that one heap's stop-the-world
-  // collection doesn't pause the rest. Lazy because this object is initialized at image build time.
-  private val isolates by lazy {
+  // collection doesn't pause the rest.
+  private val isolates =
     if (System.getProperty("org.graalvm.nativeimage.imagecode") == "runtime") {
       IsolatePool(Runtime.getRuntime().availableProcessors().coerceAtMost(8))
     } else {
       null
     }
-  }
 
   override fun pluginInfo() = buildJsonObject {
     put("name", "dprint-plugin-ktfmt")
