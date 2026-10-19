@@ -8,3 +8,16 @@ gradle/wrapper/**         linguist-vendored=true
 
 # Generated lockfiles.
 mise.lock                 linguist-generated=true
+
+# Copied from ktfmt's native-image build.
+src/main/java/ktfmt/**                               linguist-vendored=true
+src/main/native-image/**                             linguist-vendored=true
+src/main/resources/META-INF/native-image/ktfmt/**    linguist-vendored=true
+src/main/resources/KTFMT_LICENSE                     linguist-vendored=true
+
+# Parity fixtures: inputs mostly copied from other projects, outputs from the
+# ktfmt CLI.
+src/test/resources/parity/input/**                   linguist-vendored=true
+src/test/resources/parity/meta/**                    linguist-generated=true
+src/test/resources/parity/google/**                  linguist-generated=true
+src/test/resources/parity/kotlinlang/**              linguist-generated=true
